@@ -3,7 +3,7 @@ name: Publish Node.js Package
 on:
   push:
     branches:
-      - main  # workflow се стартира при push към main
+      - main
 
 jobs:
   publish:
@@ -21,11 +21,14 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: server  # <- добавено
 
       - name: Build package (optional)
         run: npm run build || echo "No build step"
+        working-directory: server  # <- добавено
 
       - name: Publish package
         run: npm publish
+        working-directory: server  # <- много важно
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
