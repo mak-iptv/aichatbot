@@ -1,6 +1,7 @@
 {
   "name": "@mak-iptv/aichatbot",
   "version": "1.0.2",
+  "private": false",
   "type": "module",
   "main": "server.js",
   "scripts": {
