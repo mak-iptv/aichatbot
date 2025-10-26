@@ -1,26 +1,40 @@
+// server.js
 import express from "express";
-import cors from "cors";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import fetch from "node-fetch"; // Node.js 20+ може и global fetch
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Вземаме ключа от environment (GitHub Secrets или локално .env)
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-app.post("/chat", async (req, res) => {
+if (!GEMINI_API_KEY) {
+  console.error("GEMINI_API_KEY не е зададен!");
+  process.exit(1);
+}
+
+app.post("/api/gemini", async (req, res) => {
   try {
-    const userMessage = req.body.message;
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(userMessage);
-    const reply = result.response.text();
-    res.json({ reply });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Gabim gjatë komunikimit me API-në" });
+    const userPrompt = req.body.prompt;
+
+    const response = await fetch("https://api.ai.google/v1/gemini:generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${GEMINI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gemini-2.5",
+        prompt: userPrompt
+      })
+    });
+
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error("Gemini proxy error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-app.listen(process.env.PORT || 3000, () =>
-  console.log("✅ Serveri po punon në portin " + (process.env.PORT || 3000))
-);
+const PORT = process
