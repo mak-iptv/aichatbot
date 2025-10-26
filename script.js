@@ -6,7 +6,7 @@ const fileUploadWrapper = document.querySelector(".file-upload-wrapper");
 const fileCancelButton = fileUploadWrapper.querySelector("#file-cancel");
 
 // Vendos URL e backend-it të Render
-const API_URL = "https://aichat-server.onrender.com/chat";
+const API_URL = "https://aichat-sc4w.onrender.com/chat";
 
 // Ruaj mesazhin dhe file
 const userData = { message: null, file: { data: null, mime_type: null } };
