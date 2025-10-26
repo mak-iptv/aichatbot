@@ -3,78 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Chat with Base64</title>
+  <title>Live AI Chat</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #chat { border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll; margin-bottom: 10px; }
+    .user { color: blue; margin-bottom: 5px; }
+    .server { color: green; margin-bottom: 5px; }
+    input, button { margin: 5px 0; }
+  </style>
 </head>
 <body>
-  <h1>AI Chat</h1>
+  <h1>Live AI Chat</h1>
+  <div id="chat"></div>
 
-  <!-- Input për mesazhe -->
   <input type="text" id="messageInput" placeholder="Shkruaj mesazhin...">
   <button id="sendMessage">Dërgo Mesazhin</button>
-  <br><br>
-
-  <!-- Input për fajlla -->
+  <br>
   <input type="file" id="fileInput">
   <button id="sendFile">Dërgo Fajllin</button>
 
-  <h2>Rezultatet:</h2>
-  <pre id="output"></pre>
-
   <script>
+    const chat = document.getElementById('chat');
     const messageInput = document.getElementById('messageInput');
     const sendMessageBtn = document.getElementById('sendMessage');
     const fileInput = document.getElementById('fileInput');
     const sendFileBtn = document.getElementById('sendFile');
-    const output = document.getElementById('output');
 
-    const API_URL = 'https://aichat-sc4w.onrender.com/api/message'; // Endpoint supozues
-
-    // Funksion për të shtuar tekst në output
-    function logOutput(text) {
-      output.textContent += text + '\n';
+    function addMessage(text, sender) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      div.className = sender;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
     }
 
-    // Dërgo një mesazh të thjeshtë
-    sendMessageBtn.addEventListener('click', () => {
-      const message = messageInput.value;
-      if (!message) return alert('Shkruaj një mesazh!');
+    async function sendToBackend(payload, senderType = 'user') {
+      addMessage(payload.message || 'Fajll i dërguar', senderType);
 
-      fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
-      })
-      .then(res => res.json())
-      .then(data => logOutput('Server: ' + JSON.stringify(data)))
-      .catch(err => logOutput('Gabim: ' + err));
-    });
-
-    // Dërgo një fajll të koduar në Base64
-    sendFileBtn.addEventListener('click', () => {
-      const file = fileInput.files[0];
-      if (!file) return alert('Zgjidh një fajll!');
-
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        const base64String = event.target.result.split(',')[1]; // Merr pjesën Base64
-
-        fetch(API_URL, {
+      try {
+        const res = await fetch('http://localhost:3000/send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: 'Ky është një fajll Base64',
-            file: base64String,
-            filename: file.name,
-            filetype: file.type
-          })
-        })
-        .then(res => res.json())
-        .then(data => logOutput('Server: ' + JSON.stringify(data)))
-        .catch(err => logOutput('Gabim: ' + err));
-      };
-
-      reader.readAsDataURL(file);
-    });
-  </script>
-</body>
-</html>
+          body: JSON.stringify(payload)
