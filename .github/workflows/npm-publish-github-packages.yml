@@ -31,4 +31,5 @@ jobs:
         run: npm publish
         working-directory: server  # <- много важно
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
