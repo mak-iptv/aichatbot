@@ -27,9 +27,23 @@ jobs:
         run: npm run build || echo "No build step"
         working-directory: server
 
-      - name: Publish package
-        run: npm publish
+      - name: Verify package.json
+        run: |
+          echo "Name: $(jq -r .name package.json)"
+          echo "Version: $(jq -r .version package.json)"
+          echo "Main: $(jq -r .main package.json)"
+        working-directory: server
+
+      - name: Dry-run publish (debug)
+        run: npm publish --dry-run --verbose
         working-directory: server
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}  # <-- PAT me scope write:packages
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      - name: Publish package
+        run: npm publish --verbose
+        working-directory: server
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
