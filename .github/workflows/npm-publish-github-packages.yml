@@ -31,5 +31,5 @@ jobs:
         run: npm publish
         working-directory: server
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}  # <-- PAT me scope write:packages
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
