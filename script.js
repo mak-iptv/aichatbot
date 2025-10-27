@@ -1,33 +1,43 @@
-const OPENAI_API_KEY = "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"; 
+// server/script.js
+import express from "express";
+import bodyParser from "body-parser";
+import fetch from "node-fetch";
 
-async function fetchPergjigjenEChatbotit(pyetjaEPerdoruesit) {
-  const url = 'https://api.openai.com/v1/chat/completions';
+const app = express();
+app.use(bodyParser.json());
 
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+if (!GEMINI_API_KEY) {
+  console.error("❌ Mungon GEMINI_API_KEY (shtoje si secret në GitHub)!");
+  process.exit(1);
+}
+
+app.post("/api/chat", async (req, res) => {
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [
-          { "role": "user", "content": pyetjaEPerdoruesit }
-        ],
-        max_tokens: 150
-      })
-    });
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: "Missing message" });
 
-    if (!response.ok) {
-        throw new Error(`Gabim i HTTP: ${response.status}`);
-    }
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: message }] }],
+        }),
+      }
+    );
 
     const data = await response.json();
-    return data.choices[0].message.content;
-
+    const reply =
+      data.candidates?.[0]?.content?.parts?.[0]?.text || "(No response)";
+    res.json({ reply });
   } catch (error) {
-    console.error("Gabim gjatë thirrjes së API-së së OpenAI:", error);
-    return "Gabim në lidhje me AI.";
+    console.error("❌ Error:", error);
+    res.status(500).json({ error: error.message });
   }
-}
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
